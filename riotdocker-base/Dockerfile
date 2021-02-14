@@ -1,13 +1,32 @@
-FROM ubuntu:bionic
+FROM ubuntu:hirsute AS builder
 
-LABEL maintainer="Kaspar Schleiser <kaspar@riot-os.org>"
-
+ENV DEBIAN_FRONTEND=noninteractive
 RUN \
     echo 'Update the package index files to latest available versions' >&2 && \
     apt-get update && \
     echo 'Install GCC' >&2 && \
     apt-get -y --no-install-recommends install \
         gcc \
+        libc6-dev \
+        && \
+    echo 'Clean up installation files' >&2 && \
+    apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+
+# compile suid create_user binary
+COPY create_user.c /tmp/create_user.c
+RUN gcc -DHOMEDIR=\"/data/riotbuild\" -DUSERNAME=\"riotbuild\" /tmp/create_user.c -o /tmp/create_user \
+    && rm /tmp/create_user.c
+
+FROM ubuntu:hirsute
+
+LABEL maintainer="Kaspar Schleiser <kaspar@riot-os.org>"
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN \
+    echo 'Update the package index files to latest available versions' >&2 && \
+    apt-get update && \
+    echo 'Install GCC' >&2 && \
+    apt-get -y --no-install-recommends install \
         git \
         python3 \
         python3-dev \
@@ -16,12 +35,10 @@ RUN \
     echo 'Clean up installation files' >&2 && \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# compile suid create_user binary
-COPY create_user.c /tmp/create_user.c
-RUN gcc -DHOMEDIR=\"/data/riotbuild\" -DUSERNAME=\"riotbuild\" /tmp/create_user.c -o /usr/local/bin/create_user \
-    && chown root:root /usr/local/bin/create_user \
-    && chmod u=rws,g=x,o=- /usr/local/bin/create_user \
-    && rm /tmp/create_user.c
+# Copy user binary from previous stage
+COPY --from=builder /tmp/create_user /usr/local/bin/create_user
+RUN chown root:root /usr/local/bin/create_user \
+    && chmod u=rws,g=x,o=- /usr/local/bin/create_user
 
 # Create working directory for mounting the RIOT sources
 RUN mkdir -m 777 -p /data/riotbuild
