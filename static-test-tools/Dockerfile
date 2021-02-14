@@ -15,6 +15,7 @@ RUN \
         coccinelle \
         cppcheck \
         doxygen \
+        gcc \
         graphviz \
         less \
         make \
