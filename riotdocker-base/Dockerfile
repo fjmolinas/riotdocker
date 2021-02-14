@@ -1,4 +1,4 @@
-FROM ubuntu:hirsute AS builder
+FROM ubuntu:bionic AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN \
@@ -17,7 +17,7 @@ COPY create_user.c /tmp/create_user.c
 RUN gcc -DHOMEDIR=\"/data/riotbuild\" -DUSERNAME=\"riotbuild\" /tmp/create_user.c -o /tmp/create_user \
     && rm /tmp/create_user.c
 
-FROM ubuntu:hirsute
+FROM ubuntu:bionic
 
 LABEL maintainer="Kaspar Schleiser <kaspar@riot-os.org>"
 
