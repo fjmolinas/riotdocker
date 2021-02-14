@@ -1,4 +1,5 @@
-FROM riot/riotdocker-base:latest
+ARG DOCKER_USER="riot"
+FROM ${DOCKER_USER}/riotdocker-base:latest
 
 LABEL maintainer="alexandre.abadie@inria.fr"
 

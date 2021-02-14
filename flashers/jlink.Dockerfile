@@ -1,4 +1,5 @@
-FROM fjmolinas/riotdocker-base
+ARG DOCKER_USER="riot"
+FROM ${DOCKER_USER}/riotdocker-base
 
 ARG FLASH_DEPS="make unzip"
 ARG EDBG_INSTALL_DEPS="wget ca-certificates"

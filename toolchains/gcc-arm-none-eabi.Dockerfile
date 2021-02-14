@@ -1,4 +1,5 @@
-FROM fjmolinas/riotdocker-base
+ARG DOCKER_USER="riot"
+FROM ${DOCKER_USER}/riotdocker-base
 
 # Dependencies to install gcc-arm-none-eabi
 ARG ARM_INSTALL_DEPS="curl bzip2"
