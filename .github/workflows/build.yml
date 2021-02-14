@@ -56,6 +56,8 @@ jobs:
       matrix:
         toolchain: [gcc-arm-none-eabi]
     name: Build and push ${{ matrix.toolchain }}
+    env:
+      ARM_VERSION: gcc-arm-none-eabi-9-2019-q4-major
     runs-on: ubuntu-latest
     steps:
       - name: checkout
@@ -87,9 +89,12 @@ jobs:
           file: ./toolchains/${{ matrix.toolchain }}.Dockerfile
           platforms: linux/amd64,linux/arm64
           push: ${{ github.event_name == 'push' }}
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.toolchain }}:latest
+          tags: |
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.toolchain }}:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.toolchain }}:env.ARM_VERSION
           build-args: |
             DOCKER_USER=${{ secrets.DOCKERHUB_USERNAME }}
+            ARM_VERSION=env.ARM_VERSION
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
 
