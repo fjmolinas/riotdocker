@@ -42,6 +42,7 @@ jobs:
           context: ./riotdocker-base
           file: ./riotdocker-base/Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+          pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:latest
           build-args: |
@@ -88,6 +89,7 @@ jobs:
           context: .
           file: ./toolchains/${{ matrix.toolchain }}.Dockerfile
           platforms: linux/amd64,linux/arm64
+          pull: true
           push: ${{ github.event_name == 'push' }}
           tags: |
             ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.toolchain }}:latest
@@ -135,6 +137,7 @@ jobs:
           context: .
           file: ./flashers/${{ matrix.flasher }}.Dockerfile
           platforms: linux/amd64,linux/arm64,linux/arm/v7
+          pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.flasher }}:latest
           build-args: |
@@ -175,6 +178,7 @@ jobs:
           context: ./static-test-tools
           file: ./static-test-tools/Dockerfile
           platforms: linux/amd64
+          pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/static-test-tools:latest
           build-args: |
@@ -218,6 +222,7 @@ jobs:
           context: ./riotbuild
           file: ./riotbuild/Dockerfile
           platforms: linux/amd64
+          pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest
           build-args: |
