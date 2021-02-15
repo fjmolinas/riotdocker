@@ -11,7 +11,7 @@
 # Use prebuilt image:
 # 1. Prebuilt image can be pulled from Docker Hub registry with:
 #      # docker pull riot/riotbuild
-# 
+#
 # Use own build image:
 # 1. Build own image based on latest base OS image (from the riotbuild directory):
 #      # docker build --pull -t riotbuild .
@@ -21,7 +21,7 @@
 # 2. # docker run -i -t -u $UID -v $(pwd):/data/riotbuild riotbuild ./dist/tools/compile_test/compile_test.py
 ARG DOCKERHUB_USERNAME="riot"
 FROM ${DOCKERHUB_USERNAME}/gcc-arm-none-eabi as gcc-arm-none-eabi
-FROM ${DOCKERHUB_USERNAME}/static-test-tools:latest
+FROM ${DOCKERHUB_USERNAME}/riotbuild-essentials:latest
 
 LABEL maintainer="Kaspar Schleiser <kaspar@riot-os.org>"
 
@@ -197,27 +197,15 @@ RUN echo 'Installing ESP32 toolchain' >&2 && \
 
 ENV PATH $PATH:/opt/esp/xtensa-esp32-elf/bin
 
-ARG PICOLIBC_REPO=https://github.com/keith-packard/picolibc
-ARG PICOLIBC_TAG=1.4.6
-ARG PICOLIBC_URL=${PICOLIBC_REPO}/archive/${PICOLIBC_TAG}.tar.gz
-ARG PICOLIBC_ARCHIVE=${PICOLIBC_TAG}.tar.gz
+COPY cross-riscv-none-embed.txt /usr/src/picolibc/
 
-RUN echo 'Building and Installing PicoLIBC' >&2 && \
-    pip3 install --no-cache-dir meson && \
-    mkdir -p /usr/src/picolibc && \
-    cd /usr/src/picolibc/ &&\
-    curl -L -o ${PICOLIBC_ARCHIVE} ${PICOLIBC_URL} && \
-    tar -xf ${PICOLIBC_ARCHIVE} && \
-    cd picolibc-${PICOLIBC_TAG}
-
-COPY cross-riscv-none-embed.txt /usr/src/picolibc/picolibc-${PICOLIBC_TAG}/
-
-RUN cd /usr/src/picolibc/picolibc-${PICOLIBC_TAG} && \
+RUN echo 'Building and Installing PicoLIBC' >&2 \
+    cd /usr/src/picolibc && \
     which riscv-none-embed-gcc && \
     ls -al /opt/gnu-mcu-eclipse/riscv-none-gcc/*/bin && \
     mkdir build-arm build-riscv build-esp32 && \
     cd build-riscv && \
-    meson .. -Dtests=true -Dmultilib=false -Dincludedir=picolibc/riscv-none-embed/include -Dlibdir=picolibc/riscv-none-embed/lib --cross-file ../cross-riscv-none-embed.txt && \
+    meson .. -Dtests=true -Dmultilib=false -Dincludedir=riscv-none-embed/include -Dlibdir=picolibc/riscv-none-embed/lib --cross-file ../cross-riscv-none-embed.txt && \
     ninja && ninja install && \
     cd ../build-esp32 && \
     sh ../do-esp32-configure && \
