@@ -1,7 +1,7 @@
 ARG DOCKERHUB_USERNAME="riot"
 FROM ${DOCKERHUB_USERNAME}/riotdocker-base
 
-LABEL maintainer="francois-xavie.molina@inria.fr"
+LABEL maintainer="francois-xavier.molina@inria.fr"
 
 ARG FLASH_DEPS="make unzip"
 ARG EDBG_INSTALL_DEPS="wget ca-certificates"
