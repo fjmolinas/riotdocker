@@ -1,8 +1,8 @@
 ARG DOCKERHUB_USERNAME="riot"
-FROM ${DOCKERHUB_USERNAME}/gcc-arm-none-eabi-lite as gcc-arm-none-eabi
+FROM ${DOCKERHUB_USERNAME}/gcc-arm-none-eabi.lite as gcc-arm-none-eabi
 FROM ${DOCKERHUB_USERNAME}/riotbuild-essentials
 
-LABEL maintainer="francois-xavie.molina@inria.fr"
+LABEL maintainer="francois-xavier.molina@inria.fr"
 
 # Install ARM GNU embedded toolchain
 ARG ARM_FOLDER=gcc-arm-none-eabi

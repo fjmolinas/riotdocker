@@ -1,6 +1,6 @@
 ARG DOCKERHUB_USERNAME="riot"
 FROM ${DOCKERHUB_USERNAME}/riotdocker-base
-LABEL maintainer="francois-xavie.molina@inria.fr"
+LABEL maintainer="francois-xavier.molina@inria.fr"
 
 # Dependencies to install gcc-arm-none-eabi
 ARG ARM_INSTALL_DEPS="curl bzip2"
