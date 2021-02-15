@@ -1,5 +1,7 @@
-ARG DOCKER_USER="riot"
-FROM ${DOCKER_USER}/riotdocker-base
+ARG DOCKERHUB_USERNAME="riot"
+FROM ${DOCKERHUB_USERNAME}/riotdocker-base
+
+LABEL maintainer="francois-xavie.molina@inria.fr"
 
 ARG FLASH_DEPS="make unzip"
 ARG EDBG_INSTALL_DEPS="wget ca-certificates"
@@ -19,6 +21,7 @@ RUN apt-get -y --no-install-recommends install \
 
 # Install Jlink
 ARG TARGETPLATFORM
+ENV TARGETPLATFORM=${TARGETPLATFORM:-linux/amd64}
 RUN if [ "${TARGETPLATFORM}" = "linux/amd64" ] ; \
         then export ARCH="x86_64"; \
     elif [ "${TARGETPLATFORM}" = "linux/arm64" ] ; \

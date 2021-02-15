@@ -1,5 +1,7 @@
-ARG DOCKER_USER="riot"
-FROM ${DOCKER_USER}/riotdocker-base
+ARG DOCKERHUB_USERNAME="riot"
+FROM ${DOCKERHUB_USERNAME}/riotbuild-essentials
+
+LABEL maintainer="francois-xavie.molina@inria.fr"
 
 # Dependencies to install gcc-arm-none-eabi
 ARG ARM_INSTALL_DEPS="curl bzip2"

@@ -19,9 +19,9 @@
 # Usage:
 # 1. cd to riot root
 # 2. # docker run -i -t -u $UID -v $(pwd):/data/riotbuild riotbuild ./dist/tools/compile_test/compile_test.py
-ARG DOCKER_USER="riot"
-FROM ${DOCKER_USER}/gcc-arm-none-eabi as gcc-arm-none-eabi
-FROM ${DOCKER_USER}/static-test-tools:latest
+ARG DOCKERHUB_USERNAME="riot"
+FROM ${DOCKERHUB_USERNAME}/gcc-arm-none-eabi as gcc-arm-none-eabi
+FROM ${DOCKERHUB_USERNAME}/static-test-tools:latest
 
 LABEL maintainer="Kaspar Schleiser <kaspar@riot-os.org>"
 

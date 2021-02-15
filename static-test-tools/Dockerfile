@@ -1,5 +1,5 @@
-ARG DOCKER_USER="riot"
-FROM ${DOCKER_USER}/riotdocker-base:latest
+ARG DOCKERHUB_USERNAME="riot"
+FROM ${DOCKERHUB_USERNAME}/riotdocker-base:latest
 
 LABEL maintainer="alexandre.abadie@inria.fr"
 
