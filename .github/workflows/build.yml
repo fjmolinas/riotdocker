@@ -41,7 +41,7 @@ jobs:
         with:
           context: ./riotdocker-base
           file: ./riotdocker-base/Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:latest
@@ -283,7 +283,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        flasher: [jlink]
+        flasher: [jlink, edbg, openocd]
     name: Build and push ${{ matrix.flasher }}
     runs-on: ubuntu-latest
     steps:
@@ -314,7 +314,7 @@ jobs:
         with:
           context: .
           file: ./flashers/${{ matrix.flasher }}.Dockerfile
-          platforms: linux/amd64,linux/arm64,linux/arm/v7
+          platforms: linux/amd64,linux/arm64
           pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.flasher }}:latest
