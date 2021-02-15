@@ -197,17 +197,19 @@ RUN echo 'Installing ESP32 toolchain' >&2 && \
 
 ENV PATH $PATH:/opt/esp/xtensa-esp32-elf/bin
 
-COPY riotbuild/cross-riscv-none-embed.txt /usr/src/picolibc/
+# COPY riotbuild/cross-riscv-none-embed.txt /usr/src/picolibc/
 
 RUN echo 'Building and Installing PicoLIBC' >&2 \
     cd /usr/src/picolibc && \
-    which riscv-none-embed-gcc && \
-    ls -al /opt/gnu-mcu-eclipse/riscv-none-gcc/*/bin && \
-    mkdir build-arm build-riscv build-esp32 && \
-    cd build-riscv && \
-    meson .. -Dtests=true -Dmultilib=false -Dincludedir=riscv-none-embed/include -Dlibdir=picolibc/riscv-none-embed/lib --cross-file ../cross-riscv-none-embed.txt && \
-    ninja && ninja install && \
-    cd ../build-esp32 && \
+    # which riscv-none-embed-gcc && \
+    # ls -al /opt/gnu-mcu-eclipse/riscv-none-gcc/*/bin && \
+    # mkdir build-arm build-riscv build-esp32 && \
+    mkdir build-arm build-esp32 && \
+    # cd build-riscv && \
+    # meson .. -Dtests=true -Dmultilib=false -Dincludedir=riscv-none-embed/include -Dlibdir=picolibc/riscv-none-embed/lib --cross-file ../cross-riscv-none-embed.txt && \
+    # ninja && ninja install && \
+    # cd ../build-esp32 && \
+    cd build-esp32 && \
     sh ../do-esp32-configure && \
     ninja && ninja install && \
     cd ../build-arm && \
