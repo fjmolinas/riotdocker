@@ -39,7 +39,7 @@ jobs:
       - name: Build and push riotdocker-base
         uses: docker/build-push-action@v2
         with:
-          context: ./riotdocker-base
+          context: .
           file: ./riotdocker-base/Dockerfile
           platforms: linux/amd64,linux/arm64
           pull: true
@@ -80,7 +80,7 @@ jobs:
       - name: Build and push static-test-tools
         uses: docker/build-push-action@v2
         with:
-          context: ./static-test-tools
+          context: .
           file: ./static-test-tools/Dockerfile
           platforms: linux/amd64
           pull: true
@@ -121,7 +121,7 @@ jobs:
       - name: Build and push riotbuild-essentials
         uses: docker/build-push-action@v2
         with:
-          context: ./riotbuild-essentials
+          context: .
           file: ./riotbuild-essentials/Dockerfile
           platforms: linux/amd64
           pull: true
@@ -168,7 +168,7 @@ jobs:
       - name: Build and push ${{ matrix.toolchain }}
         uses: docker/build-push-action@v2
         with:
-          context: ./toolchains
+          context: .
           file: ./toolchains/${{ matrix.toolchain }}.Dockerfile
           platforms: linux/amd64,linux/arm64
           pull: true
@@ -220,7 +220,7 @@ jobs:
       - name: Build and push ${{ matrix.toolchain }}
         uses: docker/build-push-action@v2
         with:
-          context: ./toolchains
+          context: .
           file: ./toolchains/${{ matrix.toolchain }}.Dockerfile
           platforms: linux/amd64
           pull: true
@@ -267,7 +267,7 @@ jobs:
       - name: Build and push riotbuild
         uses: docker/build-push-action@v2
         with:
-          context: ./riotbuild
+          context: .
           file: ./riotbuild/Dockerfile
           platforms: linux/amd64
           pull: true

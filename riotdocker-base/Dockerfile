@@ -13,7 +13,7 @@ RUN \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # compile suid create_user binary
-COPY create_user.c /tmp/create_user.c
+COPY riotdocker-base/create_user.c /tmp/create_user.c
 RUN gcc -DHOMEDIR=\"/data/riotbuild\" -DUSERNAME=\"riotbuild\" /tmp/create_user.c -o /tmp/create_user \
     && rm /tmp/create_user.c
 
@@ -48,7 +48,7 @@ RUN git config --system user.name "riot" && \
     git config --system user.email "riot@example.com"
 
 # Copy our entry point script (signal wrapper)
-COPY run.sh /run.sh
+COPY riotdocker-base/run.sh /run.sh
 ENTRYPOINT ["/bin/bash", "/run.sh"]
 
 # By default, run a shell when no command is specified on the docker command line

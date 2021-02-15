@@ -31,7 +31,7 @@ RUN \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install required Python packages
-COPY requirements.txt /tmp/requirements.txt
+COPY riotbuild-essentials/requirements.txt /tmp/requirements.txt
 # numpy must be already installed before installing other requirements
 RUN pip3 install --no-cache-dir numpy==1.17.4
 RUN echo 'Installing python3 packages' >&2 && \

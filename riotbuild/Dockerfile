@@ -197,7 +197,7 @@ RUN echo 'Installing ESP32 toolchain' >&2 && \
 
 ENV PATH $PATH:/opt/esp/xtensa-esp32-elf/bin
 
-COPY cross-riscv-none-embed.txt /usr/src/picolibc/
+COPY riotbuild/cross-riscv-none-embed.txt /usr/src/picolibc/
 
 RUN echo 'Building and Installing PicoLIBC' >&2 \
     cd /usr/src/picolibc && \
@@ -232,7 +232,7 @@ ENV PATH $PATH:/opt/riot-toolchain/msp430-elf/${RIOT_TOOLCHAIN_GCCPKGVER}/bin
 # install required python packages from file
 # numpy must be already installed before installing some other requirements (emlearn)
 RUN pip3 install --no-cache-dir numpy==1.17.4
-COPY requirements.txt /tmp/requirements.txt
+COPY riotbuild/requirements.txt /tmp/requirements.txt
 RUN echo 'Installing python3 packages' >&2 \
     && pip3 install --no-cache-dir -r /tmp/requirements.txt \
     && rm /tmp/requirements.txt

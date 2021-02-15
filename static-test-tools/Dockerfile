@@ -30,7 +30,7 @@ RUN \
     apt-get clean && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
 # Install required Python packages
-COPY requirements.txt /tmp/requirements.txt
+COPY static-test-tools/requirements.txt /tmp/requirements.txt
 RUN echo 'Installing python3 packages' >&2 && \
     pip3 install --no-cache-dir -r /tmp/requirements.txt && \
     rm -f /tmp/requirements.txt
