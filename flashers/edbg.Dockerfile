@@ -41,3 +41,6 @@ RUN apt-get -y --no-install-recommends install \
 
 # Copy edbg binary from previous stage
 COPY --from=builder /opt/edbg/edbg /usr/local/bin/edbg
+
+# Set default EDBG in the environment
+ENV EDBG=/usr/local/bin/edbg
