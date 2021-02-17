@@ -41,7 +41,7 @@ jobs:
         with:
           context: .
           file: ./riotdocker-base/Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:latest
@@ -314,7 +314,7 @@ jobs:
         with:
           context: .
           file: ./flashers/${{ matrix.flasher }}.Dockerfile
-          platforms: linux/amd64,linux/arm64
+          platforms: linux/amd64,linux/arm64,linux/arm/v7
           pull: true
           push: ${{ github.event_name == 'push' }}
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/${{ matrix.flasher }}:latest
