@@ -1,0 +1,123 @@
+---
+name: build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - '*'
+jobs:
+  build-riotdocker-base:
+    name: Build and push images
+    runs-on: ubuntu-latest
+    env:
+      RIOT_BRANCH: 2020.10-branch
+    services:
+      registry:
+        image: registry:2
+        ports:
+          - 5000:5000
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Set up Docker Buildx
+        if: ${{ github.event_name == 'push' }}
+        uses: docker/setup-buildx-action@v1
+
+      - name: Set up Docker Buildx local registy
+        if: ${{ github.event_name != 'push' }}
+        uses: docker/setup-buildx-action@v1
+        with:
+          driver-opts: network=host
+
+      - name: Set env.registry to dockerhub
+        if: ${{ github.event_name == 'push' }}
+        run: |
+          echo "registry=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
+
+      - name: Set env.registry to local
+        if: ${{ github.event_name != 'push' }}
+        run: |
+          echo "registry=localhost:5000" >> $GITHUB_ENV
+
+      - name: Cache Docker layers
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-
+
+      - name: Login to DockerHub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push riotdocker-base
+        uses: docker/build-push-action@v2
+        with:
+          context: ./riotdocker-base
+          platforms: linux/amd64
+          pull: true
+          push: true
+          tags: ${{ env.registry }}/riotdocker-base:latest
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Build and push static-test-tools
+        uses: docker/build-push-action@v2
+        with:
+          context: ./static-test-tools
+          platforms: linux/amd64
+          pull: true
+          push: true
+          tags: ${{ env.registry }}/static-test-tools:latest
+          build-args: |
+            DOCKERHUB_USERNAME=${{ env.registry }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Build and push riotbuild
+        uses: docker/build-push-action@v2
+        with:
+          context: ./riotbuild
+          platforms: linux/amd64
+          pull: true
+          push: true
+          tags: ${{ env.registry }}/riotbuild:latest
+          build-args: |
+            DOCKERHUB_USERNAME=${{ env.registry }}
+          cache-from: type=local,src=/tmp/.buildx-cache
+          cache-to: type=local,dest=/tmp/.buildx-cache
+
+      - name: Checkout RIOT
+        uses: actions/checkout@v2
+        with:
+          repository: RIOT-OS/RIOT
+          ref: ${{ env.RIOT_BRANCH }}
+          path: RIOT
+
+      - name: Run gnu build test
+        run: |
+          make -CRIOT/examples/hello-world buildtest
+        env:
+          BUILD_IN_DOCKER: 1
+          DOCKER_IMAGE: ${{ env.registry }}/riotbuild:latest
+          BOARDS: "arduino-uno esp32-wroom-32 hifive1 msb-430h native pic32-wifire samr21-xpro"
+
+      - name: Run llvm build test
+        run: |
+          make -CRIOT/examples/hello-world buildtest
+        env:
+          BUILD_IN_DOCKER: 1
+          DOCKER_IMAGE: ${{ env.registry }}/riotbuild:latest
+          BOARDS: "native samr21-xpro"
+
+      - name: Run static tests
+        run: |
+          docker run --rm -t -v $(pwd)/RIOT:/data/riotbuild \
+          -e CI_BASE_BRANCH=${{ env.RIOT_BRANCH }} ${{ env.registry }}/riotbuild:latest \
+          ./dist/tools/ci/static_tests.sh
