@@ -102,6 +102,14 @@ jobs:
 
       - name: Run gnu build test
         run: |
+          make -CRIOT/examples/hello-world clean all
+        env:
+          BUILD_IN_DOCKER: 1
+          DOCKER_IMAGE: ${{ env.registry }}/riotbuild:latest
+          BOARD: "arduino-uno"
+
+      - name: Run gnu build test
+        run: |
           make -CRIOT/examples/hello-world buildtest
         env:
           BUILD_IN_DOCKER: 1
