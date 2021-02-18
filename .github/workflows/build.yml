@@ -28,7 +28,7 @@ jobs:
         uses: docker/setup-buildx-action@v1
 
       - name: Set up Docker Buildx local registy
-        if: ${{ github.event_name != 'push' }}
+        if: ${{ github.event_name == 'pull_request' }}
         uses: docker/setup-buildx-action@v1
         with:
           driver-opts: network=host
@@ -39,22 +39,22 @@ jobs:
           echo "registry=${{ secrets.DOCKERHUB_USERNAME }}" >> $GITHUB_ENV
 
       - name: Set env.registry to local
-        if: ${{ github.event_name != 'push' }}
+        if: ${{ github.event_name == 'pull_request' }}
         run: |
           echo "registry=localhost:5000" >> $GITHUB_ENV
-
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: ${{ runner.os }}-buildx-
 
       - name: Login to DockerHub
         uses: docker/login-action@v1
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Cache riotdocker-base layer
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache-base
+          key: ${{ runner.os }}-buildx-base-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-base-
 
       - name: Build and push riotdocker-base
         uses: docker/build-push-action@v2
@@ -64,16 +64,23 @@ jobs:
           pull: true
           push: true
           tags: ${{ env.registry }}/riotdocker-base:latest
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-base
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-base-new
 
       - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf /tmp/.buildx-cache-base
+          mv /tmp/.buildx-cache-base-new /tmp/.buildx-cache-base
+
+      - name: Cache static-test-tools
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache-static
+          key: ${{ runner.os }}-buildx-static-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-static-
 
       - name: Build and push static-test-tools
         uses: docker/build-push-action@v2
@@ -85,16 +92,23 @@ jobs:
           tags: ${{ env.registry }}/static-test-tools:latest
           build-args: |
             DOCKERHUB_USERNAME=${{ env.registry }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-static
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-static-new
 
       - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf /tmp/.buildx-cache-static
+          mv /tmp/.buildx-cache-static-new /tmp/.buildx-cache-static
+
+      - name: Cache riotbuild
+        uses: actions/cache@v2
+        with:
+          path: /tmp/.buildx-cache-riotbuild
+          key: ${{ runner.os }}-buildx-riotbuild-${{ github.sha }}
+          restore-keys: ${{ runner.os }}-buildx-riotbuild-
 
       - name: Build and push riotbuild
         uses: docker/build-push-action@v2
@@ -106,16 +120,16 @@ jobs:
           tags: ${{ env.registry }}/riotbuild:latest
           build-args: |
             DOCKERHUB_USERNAME=${{ env.registry }}
-          cache-from: type=local,src=/tmp/.buildx-cache
-          cache-to: type=local,dest=/tmp/.buildx-cache-new
+          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-riotbuild
+          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-riotbuild-new
 
       - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
         # https://github.com/moby/buildkit/issues/1896
         run: |
-          rm -rf /tmp/.buildx-cache
-          mv /tmp/.buildx-cache-new /tmp/.buildx-cache
+          rm -rf /tmp/.buildx-cache-riotbuild
+          mv /tmp/.buildx-cache-riotbuild-new /tmp/.buildx-cache-riotbuild
 
       - name: Checkout RIOT
         uses: actions/checkout@v2
