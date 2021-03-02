@@ -1,5 +1,5 @@
 ---
-name: build-test
+name: build-test-pull-request
 
 on:
   pull_request:
@@ -7,7 +7,7 @@ on:
       - '*'
 jobs:
   build-riotdocker-base:
-    name: Build and test PR
+    name: Build and test pull request
     runs-on: ubuntu-latest
     env:
       RIOT_BRANCH: 2020.10-branch
@@ -17,7 +17,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Set up Docker Buildx
-        if: ${{ github.event_name == 'push' }}
         uses: docker/setup-buildx-action@v1
 
       - name: Cache riotdocker-base layer
@@ -32,11 +31,10 @@ jobs:
         with:
           context: ./riotdocker-base
           platforms: linux/amd64
-          pull: true
           load: true
-          tags: test/riotdocker-base:latest
-          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-base
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-base-new
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:latest
+          cache-from: type=local,src=/tmp/.buildx-cache-base
+          cache-to: type=local,dest=/tmp/.buildx-cache-base-new
 
       - name: Move cache
         # Temp fix
@@ -58,13 +56,12 @@ jobs:
         with:
           context: ./static-test-tools
           platforms: linux/amd64
-          pull: true
           load: true
-          tags: test/static-test-tools:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/static-test-tools:latest
           build-args: |
-            DOCKERHUB_USERNAME=test
-          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-static
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-static-new
+            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+          cache-from: type=local,src=/tmp/.buildx-cache-static
+          cache-to: type=local,dest=/tmp/.buildx-cache-static-new
 
       - name: Move cache
         # Temp fix
@@ -86,13 +83,12 @@ jobs:
         with:
           context: ./riotbuild
           platforms: linux/amd64
-          pull: true
           load: true
-          tags: test/riotbuild:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest
           build-args: |
-            DOCKERHUB_USERNAME=test
-          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-riotbuild
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-riotbuild-new
+            DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
+          cache-from: type=local,src=/tmp/.buildx-cache-riotbuild
+          cache-to: type=local,dest=/tmp/.buildx-cache-riotbuild-new
 
       - name: Move cache
         # Temp fix
@@ -114,19 +110,20 @@ jobs:
           make -CRIOT/examples/hello-world buildtest
         env:
           BUILD_IN_DOCKER: 1
-          DOCKER_IMAGE: test/riotbuild:latest
+          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest
           BOARDS: "arduino-uno esp32-wroom-32 hifive1 msb-430h native pic32-wifire samr21-xpro"
 
       - name: Run llvm build test
         run: |
           make -CRIOT/examples/hello-world buildtest
         env:
+          TOOLCHAIN: llvm
           BUILD_IN_DOCKER: 1
-          DOCKER_IMAGE: test/riotbuild:latest
+          DOCKER_IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest
           BOARDS: "native samr21-xpro"
 
       - name: Run static tests
         run: |
           docker run --rm -t -v $(pwd)/RIOT:/data/riotbuild \
-          -e CI_BASE_BRANCH=${{ env.RIOT_BRANCH }} test/riotbuild:latest \
+          -e CI_BASE_BRANCH=${{ env.RIOT_BRANCH }} ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest \
           ./dist/tools/ci/static_tests.sh
