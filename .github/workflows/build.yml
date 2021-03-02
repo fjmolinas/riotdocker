@@ -41,8 +41,8 @@ jobs:
           pull: true
           push: true
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:latest
-          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-base
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-base-new
+          cache-from: type=local,src=/tmp/.buildx-cache-base
+          cache-to: type=local,dest=/tmp/.buildx-cache-base-new
 
       - name: Move cache
         # Temp fix
@@ -69,8 +69,8 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/static-test-tools:latest
           build-args: |
             DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-static
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-static-new
+          cache-from: type=local,src=/tmp/.buildx-cache-static
+          cache-to: type=local,dest=/tmp/.buildx-cache-static-new
 
       - name: Move cache
         # Temp fix
@@ -97,8 +97,8 @@ jobs:
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest
           build-args: |
             DOCKERHUB_USERNAME=${{ secrets.DOCKERHUB_USERNAME }}
-          cache-from: type=local,mode=max,src=/tmp/.buildx-cache-riotbuild
-          cache-to: type=local,mode=max,dest=/tmp/.buildx-cache-riotbuild-new
+          cache-from: type=local,src=/tmp/.buildx-cache-riotbuild
+          cache-to: type=local,dest=/tmp/.buildx-cache-riotbuild-new
 
       - name: Move cache
         # Temp fix
