@@ -113,14 +113,13 @@ d
           ref: ${{ env.RIOT_BRANCH }}-branch
           path: RIOT
 
-      - name: Run gnu build test
+      - name: Test build
         run: |
           make -C RIOT/examples/hello-world all BOARD=arduino-uno
         env:
           BUILD_IN_DOCKER: 1
           DOCKER_IMAGE: localhost:5000/riotbuild:latest
           BOARDS: "arduino-uno esp32-wroom-32 hifive1 msb-430h native pic32-wifire samr21-xpro"
-
 
       - name: Run gnu build test
         run: |
