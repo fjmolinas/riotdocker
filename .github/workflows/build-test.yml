@@ -22,6 +22,10 @@ jobs:
       RIOT_BRANCH: '2020.10'
 
     steps:
+      - name: initial disk space
+        run: |
+          df -h
+
       - name: checkout
         uses: actions/checkout@v2
 
@@ -105,6 +109,10 @@ jobs:
         run: |
           rm -rf /tmp/.buildx-cache-riotbuild
           mv /tmp/.buildx-cache-riotbuild-new /tmp/.buildx-cache-riotbuild
+
+      - name: before test disk space
+        run: |
+          df -h
 
       - name: Checkout RIOT
         uses: actions/checkout@v2
