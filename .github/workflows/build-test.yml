@@ -22,8 +22,6 @@ jobs:
         image: registry:2
         ports:
           - 5000:5000
-    env:
-      RIOT_BRANCH: '2020.10'
 
     steps:
       - name: checkout
@@ -120,6 +118,8 @@ jobs:
     name: Test pull request
     runs-on: ubuntu-latest
     env:
+      RIOT_BRANCH: '2020.10'
+    steps:
       - name: Checkout RIOT
         uses: actions/checkout@v2
         with:
