@@ -1,5 +1,5 @@
 ---
-name: build-test-pull-request
+name: build
 
 on:
   push:
@@ -12,10 +12,11 @@ on:
       - '*'
 jobs:
   build:
-    name: Build pull request
+    name: Build
     runs-on: ubuntu-latest
     env:
       RIOT_BRANCH: '2021.01'
+      DOCKER_REGISTRY: "${{ secrets.DOCKERHUB_USERNAME || 'local' }}"
 
     steps:
       - name: checkout
@@ -26,14 +27,14 @@ jobs:
         with:
           driver: docker
 
-      - name: Build and push riotdocker-base
+      - name: Build riotdocker-base
         uses: docker/build-push-action@v2
         with:
           context: ./riotdocker-base
           tags: |
             local/riotdocker-base:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:${{ env.RIOT_BRANCH }}
+            ${{ env.DOCKER_REGISTRY }}/riotdocker-base:latest
+            ${{ env.DOCKER_REGISTRY }}/riotdocker-base:${{ env.RIOT_BRANCH }}
 
       - name: Build static-test-tools
         uses: docker/build-push-action@v2
@@ -41,8 +42,8 @@ jobs:
           context: ./static-test-tools
           tags: |
             local/static-test-tools:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/static-test-tools:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/static-test-tools:${{ env.RIOT_BRANCH }}
+            ${{ env.DOCKER_REGISTRY }}/static-test-tools:latest
+            ${{ env.DOCKER_REGISTRY }}/static-test-tools:${{ env.RIOT_BRANCH }}
           build-args: |
             DOCKERHUB_REGISTRY=local
 
@@ -58,8 +59,8 @@ jobs:
           context: ./riotbuild
           tags: |
             local/riotbuild:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest
-            ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:${{ env.RIOT_BRANCH }}
+            ${{ env.DOCKER_REGISTRY }}/riotbuild:latest
+            ${{ env.DOCKER_REGISTRY }}/riotbuild:${{ env.RIOT_BRANCH }}
           build-args: |
             DOCKERHUB_REGISTRY=local
             RIOTBUILD_BRANCH=${{ env.RIOTBUILD_BRANCH }}
@@ -100,15 +101,15 @@ jobs:
         if: "${{ github.ref == 'refs/heads/master' }}"
         uses: docker/login-action@v1
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          username: ${{ env.DOCKER_REGISTRY }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Push Images
         if: "${{ github.ref == 'refs/heads/master' }}"
         run: |
-          docker image push ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:latest
-          docker image push ${{ secrets.DOCKERHUB_USERNAME }}/riotdocker-base:${{ env.RIOT_BRANCH }}
-          docker image push ${{ secrets.DOCKERHUB_USERNAME }}/static-test-tools:latest
-          docker image push ${{ secrets.DOCKERHUB_USERNAME }}/static-test-tools:${{ env.RIOT_BRANCH }}
-          docker image push ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:latest
-          docker image push ${{ secrets.DOCKERHUB_USERNAME }}/riotbuild:${{ env.RIOT_BRANCH }}
+          docker image push ${{ env.DOCKER_REGISTRY }}/riotdocker-base:latest
+          docker image push ${{ env.DOCKER_REGISTRY }}/riotdocker-base:${{ env.RIOT_BRANCH }}
+          docker image push ${{ env.DOCKER_REGISTRY }}/static-test-tools:latest
+          docker image push ${{ env.DOCKER_REGISTRY }}/static-test-tools:${{ env.RIOT_BRANCH }}
+          docker image push ${{ env.DOCKER_REGISTRY }}/riotbuild:latest
+          docker image push ${{ env.DOCKER_REGISTRY }}/riotbuild:${{ env.RIOT_BRANCH }}
