@@ -139,7 +139,7 @@ jobs:
 
       - name: Test build
         run: |
-          docker load -- input /tmp/riotbuild.tart
+          docker load --input /tmp/riotbuild.tar
           make -C RIOT/examples/hello-world all BOARD=arduino-uno
         env:
           BUILD_IN_DOCKER: 1
