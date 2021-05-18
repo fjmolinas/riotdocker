@@ -41,6 +41,10 @@ jobs:
           key: ${{ runner.os }}-buildx-base-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-base-
 
+      - name: before test disk space
+        run: |
+          df -h
+
       - name: Build and push riotdocker-base
         uses: docker/build-push-action@v2
         with:
@@ -50,6 +54,10 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache-base
           cache-to: type=local,dest=/tmp/.buildx-cache-base-new
 
+      - name: before test disk space
+        run: |
+          df -h
+
       - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
@@ -58,12 +66,20 @@ jobs:
           rm -rf /tmp/.buildx-cache-base
           mv /tmp/.buildx-cache-base-new /tmp/.buildx-cache-base
 
+      - name: before test disk space
+        run: |
+          df -h
+
       - name: Cache static-test-tools
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache-static
           key: ${{ runner.os }}-buildx-static-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-static-
+
+      - name: before test disk space
+        run: |
+          df -h
 
       - name: Build static-test-tools
         uses: docker/build-push-action@v2
@@ -76,6 +92,10 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache-static
           cache-to: type=local,dest=/tmp/.buildx-cache-static-new
 
+      - name: before test disk space
+        run: |
+          df -h
+
       - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
@@ -84,12 +104,20 @@ jobs:
           rm -rf /tmp/.buildx-cache-static
           mv /tmp/.buildx-cache-static-new /tmp/.buildx-cache-static
 
+      - name: before test disk space
+        run: |
+          df -h
+
       - name: Cache riotbuild
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache-riotbuild
           key: ${{ runner.os }}-buildx-riotbuild-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-riotbuild-
+
+      - name: before test disk space
+        run: |
+          df -h
 
       - name: Build riotbuild
         uses: docker/build-push-action@v2
@@ -101,6 +129,10 @@ jobs:
             DOCKERHUB_REGISTRY=localhost:5000
           cache-from: type=local,src=/tmp/.buildx-cache-riotbuild
           cache-to: type=local,dest=/tmp/.buildx-cache-riotbuild-new
+
+      - name: before test disk space
+        run: |
+          df -h
 
       - name: Move cache
         # Temp fix
