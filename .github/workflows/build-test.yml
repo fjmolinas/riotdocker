@@ -10,9 +10,13 @@ on:
     branches:
       - '*'
 jobs:
-  build-test:
+  build:
     name: Build and test pull request
     runs-on: ubuntu-latest
+    # buildx uses `docker-container` deriver by default which allows
+    # exporting cache and multi-platform builds, but it does not support
+    # accessing local images so a registry is required, so setup a local
+    # one
     services:
       registry:
         image: registry:2
@@ -22,10 +26,6 @@ jobs:
       RIOT_BRANCH: '2020.10'
 
     steps:
-      - name: initial disk space
-        run: |
-          df -h
-
       - name: checkout
         uses: actions/checkout@v2
 
@@ -41,10 +41,6 @@ jobs:
           key: ${{ runner.os }}-buildx-base-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-base-
 
-      - name: before test disk space
-        run: |
-          df -h
-
       - name: Build and push riotdocker-base
         uses: docker/build-push-action@v2
         with:
@@ -54,10 +50,6 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache-base
           cache-to: type=local,dest=/tmp/.buildx-cache-base-new
 
-      - name: before test disk space
-        run: |
-          df -h
-
       - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
@@ -66,20 +58,12 @@ jobs:
           rm -rf /tmp/.buildx-cache-base
           mv /tmp/.buildx-cache-base-new /tmp/.buildx-cache-base
 
-      - name: before test disk space
-        run: |
-          df -h
-
       - name: Cache static-test-tools
         uses: actions/cache@v2
         with:
           path: /tmp/.buildx-cache-static
           key: ${{ runner.os }}-buildx-static-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-static-
-
-      - name: before test disk space
-        run: |
-          df -h
 
       - name: Build static-test-tools
         uses: docker/build-push-action@v2
@@ -92,10 +76,6 @@ jobs:
           cache-from: type=local,src=/tmp/.buildx-cache-static
           cache-to: type=local,dest=/tmp/.buildx-cache-static-new
 
-      - name: before test disk space
-        run: |
-          df -h
-
       - name: Move cache
         # Temp fix
         # https://github.com/docker/build-push-action/issues/252
@@ -104,10 +84,6 @@ jobs:
           rm -rf /tmp/.buildx-cache-static
           mv /tmp/.buildx-cache-static-new /tmp/.buildx-cache-static
 
-      - name: before test disk space
-        run: |
-          df -h
-
       - name: Cache riotbuild
         uses: actions/cache@v2
         with:
@@ -115,24 +91,22 @@ jobs:
           key: ${{ runner.os }}-buildx-riotbuild-${{ github.sha }}
           restore-keys: ${{ runner.os }}-buildx-riotbuild-
 
-      - name: before test disk space
-        run: |
-          df -h
-
       - name: Build riotbuild
         uses: docker/build-push-action@v2
         with:
           context: ./riotbuild
-          push: true
           tags: localhost:5000/riotbuild:latest
           build-args: |
             DOCKERHUB_REGISTRY=localhost:5000
           cache-from: type=local,src=/tmp/.buildx-cache-riotbuild
           cache-to: type=local,dest=/tmp/.buildx-cache-riotbuild-new
+          outputs: type=docker,dest=/tmp/riotbuild.tar
 
-      - name: before test disk space
-        run: |
-          df -h
+      - name: Upload riotbuild image
+        uses: actions/upload-artifacts@v2
+        with:
+          name: riotbuild
+          path: /tmp/riotbuild.tar
 
       - name: Move cache
         # Temp fix
@@ -142,10 +116,10 @@ jobs:
           rm -rf /tmp/.buildx-cache-riotbuild
           mv /tmp/.buildx-cache-riotbuild-new /tmp/.buildx-cache-riotbuild
 
-      - name: before test disk space
-        run: |
-          df -h
-
+  test:
+    name: Test pull request
+    runs-on: ubuntu-latest
+    env:
       - name: Checkout RIOT
         uses: actions/checkout@v2
         with:
@@ -153,33 +127,43 @@ jobs:
           ref: ${{ env.RIOT_BRANCH }}-branch
           path: RIOT
 
+      - name: Download riotbuild.tar
+        uses: actions/download-artifact@v2
+        with:
+          name: riotbuild
+          path: /tmp
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
       - name: Test build
         run: |
+          docker load -- input /tmp/riotbuild.tart
           make -C RIOT/examples/hello-world all BOARD=arduino-uno
         env:
           BUILD_IN_DOCKER: 1
           DOCKER_IMAGE: localhost:5000/riotbuild:latest
           BOARDS: "arduino-uno esp32-wroom-32 hifive1 msb-430h native pic32-wifire samr21-xpro"
 
-      - name: Run gnu build test
-        run: |
-          make -CRIOT/examples/hello-world buildtest
-        env:
-          BUILD_IN_DOCKER: 1
-          DOCKER_IMAGE: localhost:5000/riotbuild:latest
-          BOARDS: "arduino-uno esp32-wroom-32 hifive1 msb-430h native pic32-wifire samr21-xpro"
+      # - name: Run gnu build test
+      #   run: |
+      #     make -CRIOT/examples/hello-world buildtest
+      #   env:
+      #     BUILD_IN_DOCKER: 1
+      #     DOCKER_IMAGE: localhost:5000/riotbuild:latest
+      #     BOARDS: "arduino-uno esp32-wroom-32 hifive1 msb-430h native pic32-wifire samr21-xpro"
 
-      - name: Run llvm build test
-        run: |
-          make -CRIOT/examples/hello-world buildtest
-        env:
-          TOOLCHAIN: llvm
-          BUILD_IN_DOCKER: 1
-          DOCKER_IMAGE: localhost:5000/riotbuild:latest
-          BOARDS: "native samr21-xpro"
+      # - name: Run llvm build test
+      #   run: |
+      #     make -CRIOT/examples/hello-world buildtest
+      #   env:
+      #     TOOLCHAIN: llvm
+      #     BUILD_IN_DOCKER: 1
+      #     DOCKER_IMAGE: localhost:5000/riotbuild:latest
+      #     BOARDS: "native samr21-xpro"
 
-      - name: Run static tests
-        run: |
-          docker run --rm -t -v $(pwd)/RIOT:/data/riotbuild \
-          -e CI_BASE_BRANCH=${{ env.RIOT_BRANCH }}-branch localhost:5000/riotbuild:latest \
-          ./dist/tools/ci/static_tests.sh
+      # - name: Run static tests
+      #   run: |
+      #     docker run --rm -t -v $(pwd)/RIOT:/data/riotbuild \
+      #     -e CI_BASE_BRANCH=${{ env.RIOT_BRANCH }}-branch localhost:5000/riotbuild:latest \
+      #     ./dist/tools/ci/static_tests.sh
