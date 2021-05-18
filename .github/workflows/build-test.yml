@@ -11,7 +11,7 @@ on:
       - '*'
 jobs:
   build:
-    name: Build and test pull request
+    name: Build pull request
     runs-on: ubuntu-latest
     # buildx uses `docker-container` deriver by default which allows
     # exporting cache and multi-platform builds, but it does not support
@@ -101,7 +101,7 @@ jobs:
           outputs: type=docker,dest=/tmp/riotbuild.tar
 
       - name: Upload riotbuild image
-        uses: actions/upload-artifacts@v2
+        uses: actions/upload-artifact@v2
         with:
           name: riotbuild
           path: /tmp/riotbuild.tar
