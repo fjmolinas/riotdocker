@@ -100,7 +100,6 @@ jobs:
           cache-to: type=local,dest=/tmp/.buildx-cache-riotbuild-new
           outputs: type=docker,dest=/tmp/riotbuild.tar
 
-      # G
       - name: Upload riotbuild image
         uses: actions/upload-artifact@v2
         with:
@@ -138,7 +137,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-     - name: buildtest
+      - name: buildtest
         run: |
           docker load --input /tmp/riotbuild.tar
           make -CRIOT/examples/hello-world buildtest
@@ -171,7 +170,7 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-     - name: buildtest
+      - name: buildtest
         run: |
           docker load --input /tmp/riotbuild.tar
           make -CRIOT/examples/hello-world buildtest
